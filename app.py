@@ -19,7 +19,7 @@ def numerical_to_classname(label):
     return class_mapping[label]
 
 def predict_class_from_sample_image(img, vgg_model):
-    # Load and preprocess the sample image
+    # Preprocess the image
     img = img.resize((224, 224))
     img = np.array(img)
     img = np.expand_dims(img, axis=0)
