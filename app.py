@@ -10,8 +10,9 @@ import gdown
 
 # Function to download file from Google Drive
 def download_file_from_google_drive(file_id, output_path):
-    url = f'https://drive.google.com/uc?id={file_id}'
-    gdown.download(url, output_path, quiet=False)
+    if not os.path.exists(output_path):
+        url = f'https://drive.google.com/uc?id={file_id}'
+        gdown.download(url, output_path, quiet=False)
 
 download_file_from_google_drive('152Y--AS0SmmqF1pMZqkM0c_gfVouWR57', 'model.h5')
 
