@@ -1,6 +1,4 @@
-#import subprocess
-#subprocess.run(['pip', 'install', 'keras'])
-
+import os
 import streamlit as st
 from PIL import Image
 import numpy as np
@@ -8,11 +6,7 @@ import tensorflow as tf
 from keras.preprocessing import image
 import joblib
 
-# Load the pre-trained models
-cnn_model = tf.keras.models.load_model('./models/cnn_model.h5')
-vgg_model = tf.keras.models.load_model('./models/vgg_model.keras')
-resnet_model = tf.keras.models.load_model('./models/resnet_model.keras')
-rf_model = joblib.load('./models/rf_model.joblib')
+vgg_model = tf.keras.models.load_model('./models/vgg_model.h5')
 
 # Define class mapping
 class_mapping = {
@@ -24,34 +18,21 @@ class_mapping = {
 def numerical_to_classname(label):
     return class_mapping[label]
 
-def predict_class_from_sample_image(img, cnn_model, transfer_learning_model, resnet_model, rf_model):
+def predict_class_from_sample_image(img, vgg_model):
     # Load and preprocess the sample image
-    img = image.resize((224, 224))
-    #img = image.img_to_array(img)
+    img = img.resize((224, 224))
     img = np.array(img)
     img = np.expand_dims(img, axis=0)
-
-    # Predict using CNN model
-    cnn_prediction = cnn_model.predict(img)
-    cnn_class = np.argmax(cnn_prediction)
 
     # Predict using Transfer Learning (VGG16) model
     vgg_prediction = vgg_model.predict(img)
     vgg_class = np.argmax(vgg_prediction)
+    vgg_accuracy = vgg_prediction[0][vgg_class]  # Probability of the predicted class
 
-    # Predict using Transfer Learning (ResNet50) model
-    resnet_prediction = resnet_model.predict(img)
-    resnet_class = np.argmax(resnet_prediction)
-
-    # Predict using Random Forest model
-    rf_prediction = rf_model.predict(img.reshape(1, -1))[0]
-
-    # Return predictions
+    # Return predictions with accuracy scores
     return {
-        'CNN': numerical_to_classname(cnn_class),
-        'Transfer Learning (VGG16)': numerical_to_classname(vgg_class),
-        'Transfer Learning (ResNet50)': numerical_to_classname(resnet_class),
-        'Random Forest': numerical_to_classname(rf_prediction)
+        'class': numerical_to_classname(vgg_class),
+        'accuracy': vgg_accuracy
     }
 
 # Streamlit app
@@ -65,12 +46,13 @@ def main():
         image = Image.open(uploaded_file)
         st.write("")
         st.write("Classifying...")
+        
+        predictions = predict_class_from_sample_image(image, vgg_model)
 
-       # predictions_cnn, predictions_vgg, predictions_resnet, predictions_rf = predict_class(image)
-
-        predictions = predict_class_from_sample_image(image, cnn_model, vgg_model, resnet_model, rf_model)
-
-        st.write(predictions)
+        # Display the JSON data using Streamlit components
+        st.title("Predicted Value:")
+        st.text("Class: " + str(predictions["class"]))
+        st.text("Accuracy: " + str(predictions["accuracy"]))
 
 if __name__ == '__main__':
     main()
