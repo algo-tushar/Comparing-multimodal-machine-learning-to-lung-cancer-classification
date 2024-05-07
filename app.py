@@ -6,7 +6,16 @@ import tensorflow as tf
 from keras.preprocessing import image
 import joblib
 
-vgg_model = tf.keras.models.load_model('./models/vgg_model.h5')
+import gdown
+
+# Function to download file from Google Drive
+def download_file_from_google_drive(file_id, output_path):
+    url = f'https://drive.google.com/uc?id={file_id}'
+    gdown.download(url, output_path, quiet=False)
+
+download_file_from_google_drive('152Y--AS0SmmqF1pMZqkM0c_gfVouWR57', 'model.h5')
+
+vgg_model = tf.keras.models.load_model('./model.h5')
 
 # Define class mapping
 class_mapping = {
